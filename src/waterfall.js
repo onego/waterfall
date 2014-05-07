@@ -41,6 +41,8 @@
             dataType: 'json', // json, jsonp, html
             params: {}, // params,{type: "popular", tags: "travel", format: "json"} => "type=popular&tags=travel&format=json"
 
+            stickToLeft: true, // stick every element to left while placing items (no strangly aligned elements in the bottom row)
+
             loadingMsg: '<div style="text-align:center;padding:10px 0; color:#999;"><img src="data:image/gif;base64,R0lGODlhEAALAPQAAP///zMzM+Li4tra2u7u7jk5OTMzM1hYWJubm4CAgMjIyE9PT29vb6KiooODg8vLy1JSUjc3N3Jycuvr6+Dg4Pb29mBgYOPj4/X19cXFxbOzs9XV1fHx8TMzMzMzMzMzMyH5BAkLAAAAIf4aQ3JlYXRlZCB3aXRoIGFqYXhsb2FkLmluZm8AIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAEAALAAAFLSAgjmRpnqSgCuLKAq5AEIM4zDVw03ve27ifDgfkEYe04kDIDC5zrtYKRa2WQgAh+QQJCwAAACwAAAAAEAALAAAFJGBhGAVgnqhpHIeRvsDawqns0qeN5+y967tYLyicBYE7EYkYAgAh+QQJCwAAACwAAAAAEAALAAAFNiAgjothLOOIJAkiGgxjpGKiKMkbz7SN6zIawJcDwIK9W/HISxGBzdHTuBNOmcJVCyoUlk7CEAAh+QQJCwAAACwAAAAAEAALAAAFNSAgjqQIRRFUAo3jNGIkSdHqPI8Tz3V55zuaDacDyIQ+YrBH+hWPzJFzOQQaeavWi7oqnVIhACH5BAkLAAAALAAAAAAQAAsAAAUyICCOZGme1rJY5kRRk7hI0mJSVUXJtF3iOl7tltsBZsNfUegjAY3I5sgFY55KqdX1GgIAIfkECQsAAAAsAAAAABAACwAABTcgII5kaZ4kcV2EqLJipmnZhWGXaOOitm2aXQ4g7P2Ct2ER4AMul00kj5g0Al8tADY2y6C+4FIIACH5BAkLAAAALAAAAAAQAAsAAAUvICCOZGme5ERRk6iy7qpyHCVStA3gNa/7txxwlwv2isSacYUc+l4tADQGQ1mvpBAAIfkECQsAAAAsAAAAABAACwAABS8gII5kaZ7kRFGTqLLuqnIcJVK0DeA1r/u3HHCXC/aKxJpxhRz6Xi0ANAZDWa+kEAA7" alt=""><br />Loading...</div>', // loading html
 
             state: {
@@ -271,6 +273,9 @@
                 obj,
                 i, j, itemsLen, styleLen;
 
+            // used for stickToLeft functionality
+            if (this.options.stickToLeft) this.currentColIndex = 0;
+
             // append $items
             this.$element.append($items);
 
@@ -344,7 +349,18 @@
             } else if ( $item.hasClass(options.prefix + '-item-fixed-right') ) {
                 colIndex = ( len > 1 ) ? ( len - 1) : 0;
             } else {
-                colIndex = minColIndex;
+                if (this.options.stickToLeft) {
+                    colIndex = this.currentColIndex;
+              
+                    // increment current col index
+                    if (this.currentColIndex < this.cols - 1) {
+                      this.currentColIndex++;
+                    } else {
+                      this.currentColIndex = 0;
+                    }
+                } else {
+                    colIndex = minColIndex;
+                }
             }
 
             position = {
@@ -591,8 +607,7 @@
             var cols = this.cols,
                 newCols = this._getColumns(); // new columns
 
-
-            if ( newCols !== cols || this.options.align !== 'left' ) {
+            if ( newCols !== cols || (this.options.align !== 'left' && !this.options.stickToLeft) ) {
                 //this._debug('event', 'resizing ...');
                 this.options.state.isResizing = true;
                 this.cols = newCols; // update columns
